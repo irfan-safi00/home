@@ -1,119 +1,126 @@
 /**
- * Irfan Safi Portfolio - Core Logic
+ * Irfan Safi Hub - Core Engine
+ * Handled: Themes, Custom Colors, Countdown, Clock, and Mouse Interactions
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- 1. LIVE SYSTEM CLOCK ---
+    // --- 1. SYSTEM CLOCK (24H Format) ---
     const startClock = () => {
         const clockEl = document.getElementById('clock');
         if (!clockEl) return;
         
         setInterval(() => {
             const now = new Date();
-            // Format: HH:MM:SS (24-hour)
             clockEl.innerText = now.toLocaleTimeString('en-GB');
         }, 1000);
     };
 
-    // --- 2. BIRTHDAY COUNTDOWN (JULY 28) ---
+    // --- 2. BIRTHDAY COUNTDOWN (July 28) ---
     const updateBirthday = () => {
         const daysEl = document.getElementById('days');
         const hoursEl = document.getElementById('hours');
         const minsEl = document.getElementById('mins');
-        
         if (!daysEl) return;
 
         const now = new Date();
-        const currentYear = now.getFullYear();
-        
-        // Target: July 28 (Month is 0-indexed, so 6 = July)
-        let bday = new Date(currentYear, 6, 28);
+        let bday = new Date(now.getFullYear(), 6, 28); // 6 is July
 
-        // If today is past July 28, target next year
-        if (now > bday) {
-            bday.setFullYear(currentYear + 1);
-        }
+        if (now > bday) bday.setFullYear(now.getFullYear() + 1);
 
         const diff = bday - now;
-
         const d = Math.floor(diff / (1000 * 60 * 60 * 24));
         const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
         const m = Math.floor((diff / 1000 / 60) % 60);
 
-        // Update DOM with smooth leading zeros
         daysEl.innerText = d.toString().padStart(2, '0');
         hoursEl.innerText = h.toString().padStart(2, '0');
         minsEl.innerText = m.toString().padStart(2, '0');
     };
 
-    // --- 3. THEME CONTROLLER ---
-    window.setTheme = (theme) => {
-        // Set attribute for CSS targeting
-        document.documentElement.setAttribute('data-theme', theme);
+    // --- 3. CUSTOM COLOR ENGINE ---
+    window.applyCustomColor = (hex) => {
+        document.documentElement.setAttribute('data-theme', 'custom');
         
-        // Update UI Button active states
-        document.querySelectorAll('.t-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
+        // Apply the main accent color
+        document.documentElement.style.setProperty('--accent', hex);
         
-        // 'white' maps to the lime button in our UI
-        const targetBtnClass = (theme === 'white') ? '.lime' : `.${theme}`;
-        const activeBtn = document.querySelector(targetBtnClass);
-        if (activeBtn) activeBtn.classList.add('active');
+        // Generate RGBA for the background glow and card spotlight
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        const rgba = `rgba(${r}, ${g}, ${b}, 0.15)`;
         
-        // Save to local storage for persistence
-        localStorage.setItem('hub-theme-pref', theme);
+        document.documentElement.style.setProperty('--accent-glow', rgba);
+        
+        // UI Updates: Activate the "+" button
+        document.querySelectorAll('.t-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.custom-trigger').classList.add('active');
+        
+        // Memory
+        localStorage.setItem('hub-theme', 'custom');
+        localStorage.setItem('hub-custom-hex', hex);
     };
 
-    // --- 4. EMAIL COPY TOOL ---
+    // --- 4. PRESET THEME CONTROLLER ---
+    window.setTheme = (theme) => {
+        if (theme !== 'custom') {
+            document.documentElement.style.removeProperty('--accent');
+            document.documentElement.style.removeProperty('--accent-glow');
+            document.querySelector('.custom-trigger').classList.remove('active');
+        }
+        
+        document.documentElement.setAttribute('data-theme', theme);
+        
+        document.querySelectorAll('.t-btn').forEach(btn => btn.classList.remove('active'));
+        const btnClass = theme === 'white' ? '.lime' : `.${theme}`;
+        const targetBtn = document.querySelector(btnClass);
+        if (targetBtn) targetBtn.classList.add('active');
+        
+        localStorage.setItem('hub-theme', theme);
+    };
+
+    // --- 5. EMAIL COPY FEATURE ---
     window.copyEmail = () => {
         const email = "safi22744@gmail.com";
         const status = document.getElementById('copy-status');
         const text = document.getElementById('email-text');
 
         navigator.clipboard.writeText(email).then(() => {
-            // UI Feedback
             text.innerText = email;
             status.style.opacity = "1";
-            
-            // Revert back after 2 seconds
             setTimeout(() => {
                 status.style.opacity = "0";
                 text.innerText = "Click to Copy";
             }, 2000);
-        }).catch(err => {
-            console.error('Could not copy email: ', err);
         });
     };
 
-    // --- 5. MOUSE SPOTLIGHT INTERACTION ---
+    // --- 6. MOUSE SPOTLIGHT ---
     const initSpotlight = () => {
-        const cards = document.querySelectorAll('.card');
-        
-        cards.forEach(card => {
+        document.querySelectorAll('.card').forEach(card => {
             card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect();
-                // Calculate cursor position relative to each card
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
+                card.style.setProperty('--mouse-x', `${e.clientX - rect.left}px`);
+                card.style.setProperty('--mouse-y', `${e.clientY - rect.top}px`);
             });
         });
     };
 
-    // --- 6. INITIALIZATION ---
+    // --- INITIALIZATION ---
     startClock();
     updateBirthday();
     initSpotlight();
 
-    // Check for saved theme or default to white (Lime)
-    const savedTheme = localStorage.getItem('hub-theme-pref') || 'white';
-    setTheme(savedTheme);
+    // Check Memory for Saved Styles
+    const savedTheme = localStorage.getItem('hub-theme') || 'white';
+    if (savedTheme === 'custom') {
+        const savedHex = localStorage.getItem('hub-custom-hex');
+        applyCustomColor(savedHex);
+    } else {
+        setTheme(savedTheme);
+    }
 
-    // Refresh countdown every minute to stay accurate
+    // Update countdown every minute
     setInterval(updateBirthday, 60000);
-
 });
