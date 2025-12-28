@@ -1,0 +1,65 @@
+body {
+    background-color: #0b192c; /* Deep Dark Blue */
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+}
+
+.container {
+    text-align: center;
+}
+
+/* Glitch Effect for 404 */
+.glitch {
+    font-size: 100px;
+    font-weight: bold;
+    position: relative;
+    color: #DA291C; /* Red Accent */
+    animation: pulse 2s infinite;
+}
+
+h1 {
+    font-size: 2rem;
+    letter-spacing: 5px;
+    margin-top: 10px;
+}
+
+p {
+    color: #6eacda;
+    margin-bottom: 30px;
+}
+
+.timer {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+.home-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background-color: #ffffff;
+    color: #0b192c;
+    text-decoration: none;
+    border-radius: 50px;
+    font-weight: bold;
+    transition: 0.3s;
+    border: 2px solid transparent;
+}
+
+.home-btn:hover {
+    background-color: transparent;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
